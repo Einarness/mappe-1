@@ -1,7 +1,13 @@
 ---
-output: html_document
+title: "Sok-1004_C2_H22"
+author: "207"
+echo: true
+output: pdf
+editor: visual
 editor_options: 
   chunk_output_type: console
+code-fold: true
+code-tools: true
 ---
 
 ## Instruksjoner
@@ -23,6 +29,7 @@ Vi skal utforske følgende: Hvilke land har høyest CO2 utslipp? Hvordan kan uts
 ```{r}
 rm(list=ls())
 library(tidyverse)
+library(ggthemes)
 ```
 
 ## Last ned data
@@ -72,7 +79,19 @@ Kommandoen `geom_smooth()` bruker en såkalt lokal regresjon til å tegne en kur
 
 Gi en fullstendig og nøyaktig beskrivelse av figuren. Tolk helningen på linjene og diskuter variasjon mellom og innad i landene. Drøft hvilke forhold figuren illustrerer på en god måte og hvilken informasjon som er vanskelig å tolke.
 
-*\[Svar på oppgave Ia her.\]*
+Figuren viser sammenhengen mellom BNP og CO2 for de fem største økonomiene i verden, målt ved kjøpekraftjustert BNP i perioden 1850-2020. Landene som sammenlignes er Kina, USA, India, Japan og Tyskland og skilles i figuren ved hjelp av forskjellig farge for hvert land. Figuren viser mengden produksjonsbasert CO2 utslipp for landene langs y-aksen, mens x-aksen viser GDP (står for BNP, altså bruttonasjonalprodukt) i 2011-priser.
+
+Kina, som vises til ved en rød linje i figuren, har hatt en enorm økning i både BNP og CO2 utslipp. Vi ser at CO2 utslippet er på omtrent 11 billioner tonn, mens BNP i faste 2011-priser er på omtrent 18 trillioner USD i 2020. Utviklingen i sammenhengen mellom CO2 utslipp og BNP har vært relativt lineær, altså har forholdet mellom CO2 utslipp og BNP vært ganske jevn hele perioden.
+
+USA, som vises til ved en lilla linje i figuren, har hatt stor vekst i BNP i faste 2011-priser siden 1850, men har i motsetning til Kina ikke hatt en jevn stor vekst i CO2 utslippet i hele perioden. USA sitt CO2 utslipp har flatet ut og falt litt tilbake. Endringen i BNP i faste 2011-priser har økt ganske jevnt i hele perioden, men kan fremstå som akselererende etter at CO2 utslippet flatet ut og gikk nedover.
+
+India, som vises til ved en grønn linje i figuren, har så og si at en lineær endring. CO2 utslippet og BNP har vokst med relativt konstant fart og sammenhengen mellom de to elementene har vært relativ konstant. India har mindre CO2 utslipp og BNP sammenlignet med USA og Kina. I tillegg kan vi se at India, i likhet med Kina, ikke har hatt en nedgang i CO2 utslipp.
+
+Japan, som vises til ved en blå linje i figuren, har hatt mindre økning i CO2 utslipp og BNP enn India, Kina og USA. Vi kan se at CO2 utslippet økte relativt raskt i en periode før det flatet litt ut i perioden etter 2000. BNP i Japan har vært økende, til tross for at det produksjonsbasert CO2 utslippet har flatet ut.
+
+Tyskland, som vises til ved en gul linje i figuren, har hatt en lik utvikling som USA når det kommer til sammenhengen mellom CO2 utslipp og BNP. CO2 utslippet økte ganske hyppig i den første perioden etter 1850, der BNP vokste en del. I 1929 nådde Tyskland toppen i CO2 utslipp og reduserte utslippet sitt deretter. I perioden etter 1929 har BNP vokst raskere enn perioden før. Tyskland var det landet som hadde mest CO2 utslipp de første 15-20 årene etter 1850, men ble raskt tatt igjen av de andre landene og hadde i 2020 minst utslipp av alle. Tyskland hadde også lavest BNP i faste 2011-priser av de fem landene i 2020.
+
+Som nevnt over er det flere forhold som figurer illusrerer på en god måte, blant annet forholdet mellom CO2 og BNP, altså forholdet mellom vekst kontra utslipp. Forholdet mellom landene er informasjon som kan være vanskeligere å tolke på grunn av store forskjeller i befolkning, politikk og areal.
 
 ### Oppgave Ib
 
@@ -82,23 +101,32 @@ Lag en figur som viser karbonintensiteten $CI_{t}$ til de fem største økonomie
 
 ```{r}
 # Løs oppgave Ib her
-#gjør gdp om til gdp per trillion dollar og co2 til billioner tonn
+#Gjør gdp om til gdp per trillion dollar og co2 til billioner tonn. Lager en variabel CI.
 data <- df %>% 
   mutate(gdp = gdp/10^12) %>%
   mutate(co2 = co2/10^3) %>%
   mutate(CI = (co2/gdp)) %>% 
+#Gjør "data" mer oversiktlig ved å relocate litt.
   relocate("CI", .after = "gdp") %>% 
   relocate("co2", .before = "gdp") 
 
+#Lager figur ved bruk av ggplot
 data%>%
   filter(country %in% list) %>% 
   ggplot(aes(x=year, y=CI, colour=country)) %>% 
   + xlim(1850,2020) %>%
-  + geom_smooth()
-
+  + geom_smooth(se=FALSE) %>% 
+  + labs(x="År", y= "CI = CO2 / BNP", title = "Karbonintensiteten (CI) til de fem største økonomiene", subtitle = "Produksjonbasert CO2 utslipp, billioner av tonn.
+         BNP i trillioner av USD i faste 2011-priser", colour="Land") %>% 
+  + theme_fivethirtyeight() %>% 
+  + theme(axis.title=element_text())
 ```
 
-*\[Besvar oppgave 1b her\]*
+Karbonintensitet i Tyskland og USA økte svært raskt i perioden 1850-1920, før den falt raskt tilbake i perioden 1920-2020. Dette kan forklares ved å se på helningen fra figuren i oppgave 1a. Her ser vi at det totale produksjonsbaserte CO2 utslippet i de to landene økte raskt i forhold til BNP, før endringen i CO2 utslippet flatet ut i en periode der BNP vokse mye i forhold til CO2 utslippet. I India og Japan har det vært mindre endring i karbonintensiteten, som vi også kan se ved å sammenligne med helningen fra figuren i oppgave 1a. Kina har tilnærmet lik BNP sammenlignet med USA, men har høyere produksjonsbasert CO2 utslipp fra omtrent 1975. Dette passer bra med helningen fra figuren i oppgave 1a.
+
+Figuren viser endringen i karbonintensitet for de fem største økonomiene i verden, i perioden 1850-2020. Landene som sammenlignes skilles i figuren, ved hjelp av de samme fargene som i forrige figur. Figuren viser, langs y-aksen, CI som står for karbonintensitet, som i figuren er antall billioner tonn CO2 per trillion USD i verdiskapning. X-aksen er definert som årene mellom 1850 og 2020. Endringen i karbonintensitet forteller oss noe om hvor mye CO2 som brukes for å skape verdi i USD.
+
+Jeg tror at bruken av fossile energikilder kan være en avgjørende betydning for variasjonen i karbonintensitet innad og mellom landene. For eksempel har kull som energikilde har hatt stor betydning for land som Kina. De har fått større inntekter, men også sluppet ut enorme mengder CO2. Olje og gass har blitt en større den av økonomien og utslippene i land som USA og Tyskland, noe man kan tolke ut ifra figurene. I tillegg tror jeg at verdenskrigen og industriell og teknologisk utvikling kan ha hatt stor betydning. Det at landene har effektivisert og forbedret metoder og produkter slik at utslippene har gått ned og at de samtidig har kunne produsert mer.
 
 ### Oppgave Ic
 
@@ -108,24 +136,31 @@ Undersøk hvorvidt bruken av kull som energikilde kan forklare forskjellen i kar
 
 ```{r}
 # besvar oppgave 1c her
-df <- df %>% 
-  mutate(coal_co2=coal_co2*10^3)
-df %>%
-  filter(country %in% list) %>% 
-  ggplot(aes(x=co2, y=coal_co2, colour=country)) %>% 
-  + xlim(1850,2020) %>%
-  + geom_point()%>% 
-  + geom_smooth()
-
+#Figur 1
 data %>%
   filter(country %in% list) %>% 
   ggplot(aes(x=year, y=CI, colour=country)) %>% 
   + xlim(1850,2020) %>%
-  + geom_smooth()
+  + geom_point(aes(size=coal_co2)) %>% 
+  + labs(x="År", y="CI = CO2 / BNP", title= "Karbonintensitet (CI) og utslipp fra kull", subtitle = "Karbonintenistet -> Billioner av tonn CO2 per trillion USD", size="Produksjonbasert CO2 utslipp fra kull", colour="Land")%>%
+  + theme_bw() %>% 
+  + theme_fivethirtyeight() %>% 
+  + theme(axis.title=element_text())
+
+#Figur 2
+data %>%
+  filter(country %in% list) %>% 
+  ggplot(aes(x=year, y=co2, colour=country)) %>%
+  + xlim(1850,2020) %>%
+  + geom_smooth(se=FALSE) %>% 
+  + labs(x="År", y= "CO2 utslipp i billioner tonn", title= "Totalt produksjonsbasert CO2 utslipp", subtitle = "Utviklingen til de fem største økonomiene fra 1850-2020", colour="Land") %>% 
+  + theme_fivethirtyeight() %>% 
+  + theme(axis.title=element_text())
+
   
 ```
 
-*\[Besvar oppgave Ic her\]*
+Figur 1 viser på y-aksen karbonintensiteten, altså sammenhengen mellom CO2 og BNP. CO2 er gitt i billioner tonn og BNP i trillioner dollar. Karbonintensitet lik 1 betyr at landet bruker en billion tonn per trillion USD i verdiskapning. Størrelsen på prikkene viser endringen i det årlige produksjonsbaserte utslipp av CO2 fra kull, målt i millioner tonn. Bruken av kull og karbonintensiteten har vært økende for landene siden starten av målingene, noe som kan tyde på at bruken av kull som energikilde har en betydning, spesielt i en tidlig fase. På den andre siden kan vi se at Tyskland og USA, som har hatt tilnærmet lik endring, har mye høyere årlig produksjonsbasert CO2 utslipp fra kull i 2020 enn i 1850, men karbonintensiteten er tilnærmet den samme i begge årene. Dette viser at bruken av kull som energikilde ikke kan direkte forklare forskjellen. I tillegg ser vi på figur 2, som viser det totale produksjonsbaserte CO2 utslippet for de fem største økonomiene i verden over en periode fra 1850-2020, at USA har et relativt høyt totalt produksjonsbasert CO2 utslipp. Dette kan tyde på at olje og gass som energikilde er igjennom denne perioden blitt viktigere og mer i USA.
 
 ## II. Konsumbaserte CO2-utslipp
 
@@ -135,7 +170,7 @@ I den foregående analysen har vi slått fast at Kina har høy karbonintensitet 
 
 Forklar hvordan konsumbaserte CO2-utslipp er konstruert og hvordan vi skal tolke den.
 
-*\[Besvar oppgave IIa her.\]*
+Årlige konsumbaserte utslipp av karbondioksid (CO2), målt i millioner tonn. Konsumbaserte utslipp er nasjonale eller regionale utslipp, som er justert for handel (dvs. territoriale/produksjonsutslipp minus utslipp innebygd i eksport, pluss utslipp innebygd i import). Hvis et lands konsumbaserte utslipp er høyere enn produksjonsutslippene, er det en nettoimportør av karbondioksid. Vi skal tolke den som det totale utslippet av CO2 som kommer fra innbyggerne i landet.
 
 ### Oppgave IIb
 
@@ -150,13 +185,13 @@ df %>%
   ggplot(aes(x=year, y=consumption_co2_per_capita, colour=country)) %>% 
   + xlim(1990,2020) %>% 
   + geom_point(aes(size = consumption_co2)) %>%
-  + geom_smooth(se=FALSE) %>% 
-  + theme_bw()
+  + labs(x="År", y= "Konsumbasert CO2 utslipp per innebygger", title= "Konsumbasert CO2 utslipp", subtitle = "Konsumbasert CO2 per innebygger i millioner tonn.
+         Totalt konsumbasert CO2 utslipp i millioner tonn.", size= "Totalt konsumbasert CO2 utslipp", colour="Land") %>% 
+  + theme_fivethirtyeight() %>% 
+  + theme(axis.title=element_text())
 ```
 
-\
-
-*\[Besvar oppgave IIb her.\]*
+Figuren viser endringen i konsumbasert CO2 utslipp per person for de fem største økonomiene i verden, i perioden 1990-2020. Landene som sammenlignes skilles i figuren, ved hjelp av de samme fargene som i de andre figurene. Figuren viser, langs y-aksen, konsumbasert CO2 utslipp per person. X-aksen er definert som årene mellom 1990 og 2020. I tillegg forteller grafen oss noe om det totale konsumbaserte CO2 utslippet ved at prikkene endrer størrelse ut ifra hvor mye totalt utslipp. En liten prikk vil fortelle oss at landet hadde lavt totalt konsumbasert CO2 utslipp i det året, mens et stor prikk vil si at landet hadde høyt totalt utslipp det året. Figuren viser at India har lavest konsumbasert utslipp av CO2 per person og USA har høyest. Kina har nest lavest utslipp per person, men har hatt størst økning i det totale konsumbaserte utslippet av CO2. Kina har høyest totalt utslipp, etterfulgt av USA. Japan og Tyskland har begge relativt likt totalt konsumbasert CO2 utslipp. USA og Tyskland har begge hatt en nedgang i utslipp per person, mens Kina har hatt en stor økning.
 
 ## III. Produksjon- og konsumbaserte utslipp
 
@@ -181,4 +216,4 @@ Positive (negative) value indicates net imports (export) of CO2 emissions.", col
   + theme_bw()
 ```
 
-*\[Besvar oppgave III her\]*
+Figuren forteller oss hva det årlige netto CO2 utslippet innebygd i handel, målt i prosent av produksjonsbaserte utslipp av CO2, i perioden fra 1990 til 2020. Landene viser til hver sin farge. Figuren forteller oss at i 2020 er det to land som har høyere utslipp på produksjonen av varene de eksporter, enn på de varene de importer. Disse to landene er India og Kina, som begge eksporter store mengder varer som har høyt produksjonsbasert CO2 utslipp. USA har gått fra å være en nettoeksportør til å være en nettoimportør i denne perioden. Det betyr at de har gått fra å være et land som har eksportert varer som har høyere produksjonsbasert CO2 utslipp enn de har importer, til å være et land som har en større andel produksjonsbasert CO2 utslipp i importen sin. Tyskland og Japan er begge nettoimportør av CO2-utslipp.
